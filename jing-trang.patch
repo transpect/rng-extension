@@ -1,0 +1,242 @@
+diff -rupN jing-trang-read-only/mod/pattern/src/main/com/thaiopensource/relaxng/sax/PatternValidator.java workspace/JingTrang/trunk/mod/pattern/src/main/com/thaiopensource/relaxng/sax/PatternValidator.java
+--- jing-trang-read-only/mod/pattern/src/main/com/thaiopensource/relaxng/sax/PatternValidator.java	2014-06-03 11:14:55.304220495 +0200
++++ workspace/JingTrang/trunk/mod/pattern/src/main/com/thaiopensource/relaxng/sax/PatternValidator.java	2014-06-03 11:26:05.342892107 +0200
+@@ -5,6 +5,8 @@ import com.thaiopensource.relaxng.patter
+ import com.thaiopensource.relaxng.pattern.PatternMatcher;
+ import com.thaiopensource.relaxng.pattern.ValidatorPatternBuilder;
+ import com.thaiopensource.xml.util.Name;
++import com.thaiopensource.xml.sax.MyElement;
++
+ import org.xml.sax.Attributes;
+ import org.xml.sax.ContentHandler;
+ import org.xml.sax.DTDHandler;
+@@ -13,22 +15,93 @@ import org.xml.sax.Locator;
+ import org.xml.sax.SAXException;
+ import org.xml.sax.SAXParseException;
+ 
++import java.util.LinkedList;
++import java.util.Iterator;
++import java.io.File;
++import java.io.PrintStream;
++import java.io.FileWriter;
++import java.io.IOException;
++
+ public class PatternValidator extends Context implements ContentHandler, DTDHandler {
+   private Matcher matcher;
+   private final ErrorHandler eh;
+   private boolean bufferingCharacters = false;
+   private final StringBuilder charBuf = new StringBuilder();
+   private Locator locator = null;
+-
++  public LinkedList <MyElement>elements;
++  private File file = null;
++  
++  public PatternValidator(Pattern pattern, ValidatorPatternBuilder builder, ErrorHandler eh) {
++    this.matcher = new PatternMatcher(pattern, builder);
++    this.eh = eh;
++    elements = new LinkedList<MyElement>();
++  }
++  
++  
++  public LinkedList <MyElement> getElements() {
++    return elements;
++  }
++  
++  private String buildxpath() {
++    Iterator iter = (Iterator)elements.iterator();        
++    MyElement element = (MyElement)iter.next();
++    String xPath = "/" + element.getQName();            
++      
++    while (iter.hasNext()) {
++      element = (MyElement)iter.next();
++      if (!element.isClosed()) {
++        xPath += ("/" + element.getQName() + "[" + element.getOccurence().toString() + "]");
++      }
++    }
++      
++    if (element.isClosed()) {
++      xPath += ("/" + element.getQName() + "[" + element.getOccurence().toString() + "]");
++    }
++    return xPath + "  ";
++  }
++  
+   public void startElement(String namespaceURI,
+ 			   String localName,
+ 			   String qName,
+ 			   Attributes atts) throws SAXException {
++	  
+     if (bufferingCharacters) {
+       bufferingCharacters = false;
+       check(matcher.matchTextBeforeStartTag(charBuf.toString(), this));
+     }
+     Name name = new Name(namespaceURI, localName);
++
++    //new
++    MyElement element = new MyElement(namespaceURI, localName, qName);
++    //New element started so we must find out how many elements of the same 
++    //name are on the same level in order to make the proper XPath expression.
++    
++    //In other words we are iterating from the back of the list till
++    //1. parent element is found (parent element is the non-closed one)
++    //   which means the current element's occurence is 1
++    //OR
++    //2. we find the same element (so we can set new element's occurence
++    //   as the last element's occurence + 1)        
++    boolean sameElementFound = false;
++    int sze = elements.size() - 1;
++    while (sze >= 0 && elements.get(sze).isClosed() && !sameElementFound) {
++        if (elements.get(sze).equals(element)) {
++            //element with the same name was found
++            element = elements.get(sze);
++            element.incOccurence();
++            element.setIsClosed(false);
++            elements.remove(sze);
++            elements.add(element);
++            sameElementFound = true;
++        } sze--;           
++    }
++    
++    if (!sameElementFound) {
++        elements.add(element);
++    }
++
++    //end
++
+     check(matcher.matchStartTagOpen(name, qName, this));
+     int len = atts.getLength();
+     for (int i = 0; i < len; i++) {
+@@ -42,6 +115,7 @@ public class PatternValidator extends Co
+       bufferingCharacters = true;
+       charBuf.setLength(0);
+     }
++    
+   }
+ 
+   public void endElement(String namespaceURI,
+@@ -54,8 +128,15 @@ public class PatternValidator extends Co
+                                             qName, this));
+     }
+     check(matcher.matchEndTag(new Name(namespaceURI, localName), qName, this));
++    while (!(elements.getLast().getName().equals(localName) &&
++            elements.getLast().getUri().equals(namespaceURI) &&
++            !elements.getLast().isClosed())) {
++       elements.removeLast();
++   }
++   
++   elements.getLast().setIsClosed(true);
+   }
+-
++   
+   public void characters(char ch[], int start, int length) throws SAXException {
+     if (bufferingCharacters) {
+       charBuf.append(ch, start, length);
+@@ -84,6 +165,7 @@ public class PatternValidator extends Co
+   }
+ 
+   public void startDocument() throws SAXException {
++	file = new File(System.getProperty("LtxValidateTempFile"));
+     check(matcher.matchStartDocument());
+   }
+ 
+@@ -99,11 +181,6 @@ public class PatternValidator extends Co
+     super.startPrefixMapping(prefix, uri);
+   }
+ 
+-  public PatternValidator(Pattern pattern, ValidatorPatternBuilder builder, ErrorHandler eh) {
+-    this.matcher = new PatternMatcher(pattern, builder);
+-    this.eh = eh;
+-  }
+-
+   public void reset() {
+     super.reset();
+     bufferingCharacters = false;
+@@ -112,7 +189,24 @@ public class PatternValidator extends Co
+   }
+ 
+   private void check(boolean ok) throws SAXException {
+-    if (!ok)
+-      eh.error(new SAXParseException(matcher.getErrorMessage(), locator));
++	if (!ok) {
++	  eh.error(new SAXParseException(matcher.getErrorMessage(), locator));	
++    	if(file.exists()) {
++    		FileWriter writer;
++    		try {
++    			if(System.getProperty("LtxValidateTempFile")!=null) {
++    				writer = new FileWriter(System.getProperty("LtxValidateTempFile"), true);
++        			writer.write(locator.getSystemId() 
++        					+ " xpath:" + buildxpath() 
++        					+ "error:" + matcher.getErrorMessage() 
++        					+ System.getProperty("line.separator")); 
++        			writer.flush();
++        			writer.close();
++    			}
++    	    	} catch (IOException e) {
++    	    		e.printStackTrace();
++    	    	}
++    	}
++    }
+   }
+ }
+
+diff -rupN jing-trang-read-only/mod/util/src/main/com/thaiopensource/xml/sax/MyElement.java workspace/JingTrang/trunk/mod/util/src/main/com/thaiopensource/xml/sax/MyElement.java
+--- jing-trang-read-only/mod/util/src/main/com/thaiopensource/xml/sax/MyElement.java	1970-01-01 01:00:00.000000000 +0100
++++ workspace/JingTrang/trunk/mod/util/src/main/com/thaiopensource/xml/sax/MyElement.java	2013-05-13 09:57:00.000000000 +0200
+@@ -0,0 +1,58 @@
++package com.thaiopensource.xml.sax;
++
++public class MyElement {
++    private String uri;
++    private String name;
++    private String qName;
++    private int occurence;    
++    private boolean isClosed;
++    
++    private MyElement(String uri, String name, String qName, int occurence) {
++        this.uri = uri;
++        this.name = name;
++        this.qName = qName;
++        this.occurence = occurence;        
++        this.isClosed = false;
++     }
++    
++    public MyElement(String uri, String name, String qName) {
++        this(uri, name, qName, 1);
++    }
++    
++    public boolean equals(Object o) {
++        if (o instanceof MyElement) {
++            MyElement element = (MyElement) o;
++            return (element.getName().equals(this.name) &&
++                    element.getUri().equals(this.uri));
++        }
++        return false;
++    }
++    
++    public String getUri() {
++        return this.uri;
++    }
++    
++    public String getName() {
++        return this.name;
++    }
++    
++    public String getQName() {
++        return this.qName;
++    }
++    
++    public void setIsClosed(boolean isClosed) {
++        this.isClosed = isClosed;
++    }
++    
++    public boolean isClosed() {
++        return this.isClosed;
++    }
++    
++    public void incOccurence() {
++        this.occurence++;
++    }
++    
++    public Integer getOccurence() {
++        return this.occurence;
++    }
++}
