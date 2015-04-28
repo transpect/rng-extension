@@ -24,7 +24,7 @@
     <p:pipe port="report" step="validate"/>
   </p:output>
 
-  <p:import href="ltx-lib.xpl"/>
+  <p:import href="validate-with-rng-declaration.xpl"/>
   <p:import href="http://xmlcalabash.com/extension/steps/library-1.0.xpl"/>
   <p:import href="http://transpect.io/xproc-util/store-debug/store-debug.xpl" />
   <p:import href="http://transpect.io/cascade/xpl/simple-progress-msg.xpl"/>

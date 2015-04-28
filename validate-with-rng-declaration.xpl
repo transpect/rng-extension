@@ -2,9 +2,10 @@
 <p:declare-step 
   xmlns:p="http://www.w3.org/ns/xproc" 
   xmlns:c="http://www.w3.org/ns/xproc-step"
+  xmlns:letex="http://www.le-tex.de/namespace"
   xmlns:tr="http://transpect.io" 
   version="1.0" 
-  type="tr:validate-with-rng" 
+  type="letex:validate-with-rng" 
   name="validate-with-rng">
   <p:documentation>Provides advanced Relax NG validation in that it returns a report (you don’t have to try/catch in order
   to get the errors) and that each error has its location in the document expressed as XPath instead of line numbers.
