@@ -12,6 +12,12 @@
   <p:option name="debug" required="false" select="'no'"/>
   <p:option name="debug-dir-uri" select="'debug'"/>
   <p:option name="status-dir-uri" select="'status'"/>
+  <p:option name="remove-srcpaths" select="'true'" required="false">
+    <p:documentation>The effect of this option being true is: remove @srcpath and /*/@source-dir-uri from the source document 
+      prior to validation, but use the unaltered source document for looking up the closest @srcpaths for each validation error.
+      This should be set to false for validation of Hub XML and other schemas in which @srcpath and /*/@source-dir-uri are legal.
+    </p:documentation>
+  </p:option>
   
   <p:input port="source" primary="true">
     <p:documentation>If you want to convert the PIs into SVRL messages for patching at the nearest @srcpath,
@@ -67,10 +73,22 @@
 
   <p:sink/>
 
-  <tr:validate-with-rng name="validate">
+  <p:identity>
     <p:input port="source">
       <p:pipe port="source" step="rng2pi"/>
     </p:input>
+  </p:identity>
+
+  <p:choose name="conditionally-strip-srcpath">
+    <p:when test="$remove-srcpaths = 'true'">
+      <p:delete match="@srcpath | /*/@source-dir-uri"/>
+    </p:when>
+    <p:otherwise>
+      <p:identity/>
+    </p:otherwise>
+  </p:choose>
+
+  <tr:validate-with-rng name="validate">
     <p:input port="schema">
       <p:pipe port="schema" step="rng2pi"/>
     </p:input>
