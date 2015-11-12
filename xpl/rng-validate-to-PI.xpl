@@ -136,6 +136,12 @@
     <p:input port="parameters"><p:empty/></p:input>
   </p:xslt>
 
+  <tr:store-debug>
+    <p:with-option name="pipeline-step" select="concat('rngvalid/', $schema-basename, '/with-PIs_1')"/>
+    <p:with-option name="active" select="$debug" />
+    <p:with-option name="base-uri" select="$debug-dir-uri" />
+  </tr:store-debug>
+  
   <tr:simple-progress-msg name="success-msg" >
     <p:with-option name="file" select="concat('validate-with-rng-PI_', $schema-basename,'_success.txt')"/>
     <p:input port="msgs">
