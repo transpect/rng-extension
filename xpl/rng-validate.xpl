@@ -4,36 +4,31 @@
   xmlns:c="http://www.w3.org/ns/xproc-step"
   xmlns:cx="http://xmlcalabash.com/ns/extensions"
   xmlns:tr="http://transpect.io"
-  name="rng2pi"
+  name="rngval"
   type="tr:validate-with-rng-PI"
   version="1.0">
 
+  <p:documentation>Sample front-end step for tr:validate-with-rng</p:documentation>
+
   <p:input port="source" primary="true">
-    <p:documentation>If you want to convert the PIs into SVRL messages for patching at the nearest @srcpath,
-      the source document must contain @srcpath attributes.</p:documentation>
+    <p:documentation>The XML document to be validated</p:documentation>
   </p:input>
-  <p:input port="schema"/>
+  <p:input port="schema">
+    <p:documentation>A Relax NG schema.</p:documentation>
+  </p:input>
 
-  <p:output primary="true" port="result"></p:output>
+  <p:output primary="true" port="result">
+    <p:pipe port="report" step="validate"/>
+  </p:output>
 
-  <p:try>
-    <p:group>
-      <p:validate-with-relax-ng name="validate" assert-valid="true">
-        <p:input port="source">
-          <p:pipe port="source" step="rng2pi"/>
-        </p:input>
-        <p:input port="schema">
-          <p:pipe port="schema" step="rng2pi"/>
-        </p:input>
-      </p:validate-with-relax-ng>
-    </p:group>
-    <p:catch name="catch">
-      <p:identity>
-        <p:input port="source">
-          <p:pipe port="error" step="catch"/>
-        </p:input>
-      </p:identity>
-    </p:catch>
-  </p:try>
+  <p:import href="validate-with-rng-declaration.xpl"/>
+
+  <tr:validate-with-rng name="validate">
+    <p:input port="schema">
+      <p:pipe port="schema" step="rngval"/>
+    </p:input>    
+  </tr:validate-with-rng>
+
+  <p:sink/>
 
 </p:declare-step> 
