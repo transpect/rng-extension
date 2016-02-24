@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<grammar 
+  xmlns="http://relaxng.org/ns/structure/1.0"
+  xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0"
+  datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+  <start>
+    <ref name="doc"/>
+  </start>
+  
+  <define name="doc">
+    <element name="doc">
+      <zeroOrMore>
+        <ref name="p"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  
+  <define name="p">
+    <element name="p">
+      <ref name="inline"/>
+    </element>
+  </define>
+  
+  <define name="inline">
+    <mixed>
+      <zeroOrMore>
+        <ref name="em"/>  
+      </zeroOrMore>
+    </mixed>
+  </define>
+  
+  <define name="em">
+    <element name="em">
+      <optional>
+        <ref name="em-type"/>
+      </optional>
+      <ref name="inline"/>
+    </element>
+  </define>
+  
+  <define name="em-type">
+    <attribute name="type">
+      <choice>
+        <value>bold</value>
+        <value>italic</value>
+        <value>bolditalic</value>
+      </choice>
+    </attribute>
+  </define>
+  
+</grammar>

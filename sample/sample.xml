@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<?xml-model href="sample.rng" type="application/xml" schematypens="http://relaxng.org/ns/structure/1.0"?>
+<doc revision="2">
+  <p>Some <em>text</em>.</p>
+  <p>More <emph>text</emph>.</p>
+  <p>Even more text.</p>
+  <p>Bold <em type="Bold">text</em><em type="bolditalic">.</em></p>
+  Bare text.
+</doc>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<c:errors xmlns:c="http://www.w3.org/ns/xproc-step">
+   <c:error xpath="/doc">found attribute "revision", but no attributes allowed here</c:error>
+   <c:error xpath="/doc/p[2]/emph[1]">element "emph" not allowed anywhere; expected the element end-tag, text or element "em"</c:error>
+   <c:error xpath="/doc/p[4]/em[1]">value of attribute "type" is invalid; must be equal to "bold", "bolditalic" or "italic"</c:error>
+   <c:error xpath="/doc/p[4]">text not allowed here; expected the element end-tag or element "p"</c:error>
+</c:errors>
