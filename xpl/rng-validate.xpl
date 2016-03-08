@@ -5,7 +5,7 @@
   xmlns:cx="http://xmlcalabash.com/ns/extensions"
   xmlns:tr="http://transpect.io"
   name="rngval"
-  type="tr:validate-with-rng-PI"
+  type="tr:validate-with-rng-sample"
   version="1.0">
 
   <p:documentation>Sample front-end step for tr:validate-with-rng</p:documentation>
