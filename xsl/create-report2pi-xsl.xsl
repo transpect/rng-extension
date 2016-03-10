@@ -34,7 +34,7 @@
       </xsl:if>
       
       <!-- identity template -->
-      <xso:template match="@* | *">
+      <xso:template match="@*|*|processing-instruction()">
         <xso:copy>
           <xso:apply-templates select="@*, node()"/>
         </xso:copy>
