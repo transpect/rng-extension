@@ -1,3 +1,5 @@
+package io.transpect.calabash.extensions;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -44,7 +46,7 @@ import com.xmlcalabash.util.TreeWriter;
  *
  * @author Lars Wittmar
  */
-public class LtxValidateWithRNG extends DefaultStep {
+public class ValidateWithRelaxNG extends DefaultStep {
 	private ReadablePipe source = null;
 	private ReadablePipe schema = null;
 	private WritablePipe result = null;
@@ -55,7 +57,7 @@ public class LtxValidateWithRNG extends DefaultStep {
 	private ArrayList<String> myErrorMessage = null;
 
 	/** Creates a new instance of Delete */
-	public LtxValidateWithRNG(XProcRuntime runtime, XAtomicStep step) {
+	public ValidateWithRelaxNG(XProcRuntime runtime, XAtomicStep step) {
 		super(runtime,step);
 	}
 
