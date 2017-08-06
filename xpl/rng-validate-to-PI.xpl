@@ -23,7 +23,10 @@
     <p:documentation>If you want to convert the PIs into SVRL messages for patching at the nearest @srcpath,
       the source document must contain @srcpath attributes.</p:documentation>
   </p:input>
-  <p:input port="schema"/>
+  <p:input port="schema">
+    <p:documentation>The Relax NG document must have a base-uri(/*) that ends in '.rng'</p:documentation>
+  </p:input>
+
   <p:output port="result" primary="true"/>
   
   <p:output port="report">
