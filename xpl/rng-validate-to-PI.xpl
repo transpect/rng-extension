@@ -18,6 +18,9 @@
       This should be set to false for validation of Hub XML and other schemas in which @srcpath and /*/@source-dir-uri are legal.
     </p:documentation>
   </p:option>
+  <p:option name="remove-xml-base" select="'true'" required="false">
+    <p:documentation>Similar to remove-srcpaths, only for @xml:base</p:documentation>
+  </p:option>
   
   <p:input port="source" primary="true">
     <p:documentation>If you want to convert the PIs into SVRL messages for patching at the nearest @srcpath,
@@ -26,7 +29,6 @@
   <p:input port="schema">
     <p:documentation>The Relax NG document must have a base-uri(/*) that ends in '.rng'</p:documentation>
   </p:input>
-
   <p:output port="result" primary="true"/>
   
   <p:output port="report">
@@ -85,6 +87,15 @@
   <p:choose name="conditionally-strip-srcpath">
     <p:when test="$remove-srcpaths = 'true'">
       <p:delete match="@srcpath | /*/@source-dir-uri"/>
+    </p:when>
+    <p:otherwise>
+      <p:identity/>
+    </p:otherwise>
+  </p:choose>
+  
+  <p:choose name="conditionally-strip-xml-base">
+    <p:when test="$remove-xml-base = 'true'">
+      <p:delete match="@xml:base"/>
     </p:when>
     <p:otherwise>
       <p:identity/>
