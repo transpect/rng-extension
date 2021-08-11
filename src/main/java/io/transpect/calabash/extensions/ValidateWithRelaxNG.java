@@ -39,6 +39,7 @@ import com.xmlcalabash.runtime.XAtomicStep;
 import com.xmlcalabash.util.TreeWriter;
 import net.sf.saxon.om.AttributeMap;
 import net.sf.saxon.om.EmptyAttributeMap;
+import net.sf.saxon.om.SingletonAttributeMap;
 import com.xmlcalabash.util.TypeUtils;
 
 @XMLCalabash(
@@ -195,9 +196,7 @@ public class ValidateWithRelaxNG extends DefaultStep {
 		
 		while( it1.hasNext() && it2.hasNext() && it3.hasNext())
 		{
-      AttributeMap attrs = EmptyAttributeMap.getInstance();
-      attrs.put(TypeUtils.attributeInfo(new QName("xpath"), it2.next()));
-			treeWriter.addStartElement(XProcConstants.c_error, attrs);
+			treeWriter.addStartElement(XProcConstants.c_error, SingletonAttributeMap.of(TypeUtils.attributeInfo(new QName("xpath"), it2.next())));
 			treeWriter.addText(it3.next());
 			treeWriter.addEndElement();
 		}
